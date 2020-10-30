@@ -308,6 +308,46 @@ def eller(win, maze):
                 set_counter = set_counter + 1
                 set_cell(maze, x, y+1, set_counter)
 
+def astar_solver(win, maze, start_x, start_y, end_x, end_y):
+    def reconstruct_path(cameFrom, x_curr, y_curr):
+        total_path = [(x_curr, y_curr)]
+        while (x_curr, y_curr) in cameFrom:
+            (x_curr, y_curr) = cameFrom[(x_curr, y_curr)]
+            total_path.insert(0, (x_curr, y_curr))
+        return total_path
+
+    def heur(x_from, y_from, x_to, y_to):
+        return math.sqrt((x_from - x_to) ** 2 + (y_from - y_to) ** 2)
+
+    open_set = []
+    came_from = {}
+
+    g_score = {}
+    f_score = {}
+
+    open_set.append((start_x, start_y))
+    g_score[(start_x, start_y)] = 0
+    f_score[(start_x, start_y)] = heur(start_x, start_y, end_x, end_y)
+
+    while open_set:
+        (x, y) = min(f_score.keys() & open_set, key=f_score.get)
+        if x == end_x and y == end_y:
+            return reconstruct_path(came_from, x, y)
+
+        open_set.remove((x, y))
+
+        neighbours = get_cell_open_neighbours(maze, x, y)
+        for neighbour in neighbours:
+            g_score_tmp = g_score[(x, y)] + 1
+            if ((neighbour[0], neighbour[1]) not in g_score) or g_score_tmp < g_score[neighbour[0], neighbour[1]]:
+                came_from[(neighbour[0], neighbour[1])] = (x, y)
+                g_score[(neighbour[0], neighbour[1])] = g_score_tmp
+                f_score[(neighbour[0], neighbour[1])] = g_score_tmp + heur(neighbour[0], neighbour[1], end_x, end_y)
+                if (neighbour[0], neighbour[1]) not in open_set:
+                    open_set.append((neighbour[0], neighbour[1]))
+
+    return None
+
 maze = np.zeros(shape=(x_size*2-1, y_size*2-1)).astype(str)
 
 win = GraphWin("ss", x_size*CELL_SIZE+1, y_size*CELL_SIZE+1, autoflush=False)
@@ -326,6 +366,8 @@ elif algorithm == 3:
     eller(win, maze)
 
 redraw(win, maze, FRAME_RATE)
+
+print(astar_solver(win, maze, 1, 1, x_size, y_size))
 
 
 win.getMouse()
