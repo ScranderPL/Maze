@@ -448,7 +448,9 @@ def dfs_iterative_solver(win, maze, start_x, start_y, end_x, end_y):
     for item in maze_shape:
         max_length *= (item + 1) // 2
 
-    for i in range(1, max_length + 1):
+    min_length = (end_x - start_x) + (end_y - start_y) + 1
+
+    for i in range(min_length, max_length + 1):
         solution = dfs_iterative_base_solver(win, maze, start_x, start_y, end_x, end_y, i)
         if solution is not None:
             return solution
