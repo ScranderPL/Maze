@@ -3,6 +3,7 @@ import math
 import numpy as np
 import random
 from graphics import *
+import time
 
 x_size = int(input("Insert X size: "))
 y_size = int(input("Insert Y size: "))
@@ -348,6 +349,35 @@ def astar_solver(win, maze, start_x, start_y, end_x, end_y):
 
     return None
 
+from collections import deque
+
+def bfs_solver(win, maze, start_x, start_y, end_x, end_y):
+    def reconstruct_path(cameFrom, x_curr, y_curr):
+        total_path = [(x_curr, y_curr)]
+        while (x_curr, y_curr) in cameFrom:
+            (x_curr, y_curr) = cameFrom[(x_curr, y_curr)]
+            total_path.insert(0, (x_curr, y_curr))
+        return total_path
+        
+    q = deque()
+    q.append((start_x, start_y))
+    came_from = {}
+    visited = set()
+    
+    while q:
+        current = q.popleft()
+        visited.add(current)
+        if current[0] == end_x and current[1] == end_y:
+            return reconstruct_path(came_from, current[0], current[1])
+        
+        neighbours = get_cell_open_neighbours(maze, current[0], current[1])
+        for neighbour in neighbours:
+            if (neighbour[0], neighbour[1]) not in visited:
+                q.append((neighbour[0], neighbour[1]))
+                came_from[(neighbour[0], neighbour[1])] = current
+    
+    return None
+
 maze = np.zeros(shape=(x_size*2-1, y_size*2-1)).astype(str)
 
 win = GraphWin("ss", x_size*CELL_SIZE+1, y_size*CELL_SIZE+1, autoflush=False)
@@ -367,7 +397,16 @@ elif algorithm == 3:
 
 redraw(win, maze, FRAME_RATE)
 
+print("A* start solution:")
+start = time.time()
 print(astar_solver(win, maze, 1, 1, x_size, y_size))
+end = time.time()
+print("elapsed time: {} sec.".format(end - start))
+print("BFS solution:")
+start = time.time()
+print(bfs_solver(win, maze, 1, 1, x_size, y_size))
+end = time.time()
+print("elapsed time: {} sec.".format(end - start))
 
 
 win.getMouse()
