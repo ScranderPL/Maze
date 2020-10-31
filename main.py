@@ -377,6 +377,35 @@ def bfs_solver(win, maze, start_x, start_y, end_x, end_y):
                 came_from[(neighbour[0], neighbour[1])] = current
     
     return None
+    
+def dfs_solver(win, maze, start_x, start_y, end_x, end_y):
+    q = deque()
+    current = (start_x, start_y)
+    q.append(current)
+    visited = set()
+    visited.add(current)
+    
+    
+    while q:
+        current = q[-1]
+        if current[0] == end_x and current[1] == end_y:
+            return list(q)
+        
+        not_visited_neighbours = []
+        neighbours = get_cell_open_neighbours(maze, current[0], current[1])
+
+        for neighbour in neighbours:
+            if (neighbour[0], neighbour[1]) not in visited:
+                not_visited_neighbours.append((neighbour[0], neighbour[1]))
+
+        if not_visited_neighbours:
+            new_item = random.choice(not_visited_neighbours)
+            q.append(new_item)
+            visited.add(new_item)
+        else:
+            q.pop()
+    
+    return None
 
 maze = np.zeros(shape=(x_size*2-1, y_size*2-1)).astype(str)
 
@@ -407,6 +436,12 @@ start = time.time()
 print(bfs_solver(win, maze, 1, 1, x_size, y_size))
 end = time.time()
 print("elapsed time: {} sec.".format(end - start))
+print("DFS solution:")
+start = time.time()
+print(dfs_solver(win, maze, 1, 1, x_size, y_size))
+end = time.time()
+print("elapsed time: {} sec.".format(end - start))
+
 
 
 win.getMouse()
