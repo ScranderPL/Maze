@@ -358,39 +358,38 @@ def bfs_solver(win, maze, start_x, start_y, end_x, end_y):
             (x_curr, y_curr) = cameFrom[(x_curr, y_curr)]
             total_path.insert(0, (x_curr, y_curr))
         return total_path
-        
+
     q = deque()
     q.append((start_x, start_y))
     came_from = {}
     visited = set()
-    
+
     while q:
         current = q.popleft()
         visited.add(current)
         if current[0] == end_x and current[1] == end_y:
             return reconstruct_path(came_from, current[0], current[1])
-        
+
         neighbours = get_cell_open_neighbours(maze, current[0], current[1])
         for neighbour in neighbours:
             if (neighbour[0], neighbour[1]) not in visited:
                 q.append((neighbour[0], neighbour[1]))
                 came_from[(neighbour[0], neighbour[1])] = current
-    
+
     return None
-    
+
 def dfs_solver(win, maze, start_x, start_y, end_x, end_y):
     q = deque()
     current = (start_x, start_y)
     q.append(current)
     visited = set()
     visited.add(current)
-    
-    
+
     while q:
         current = q[-1]
         if current[0] == end_x and current[1] == end_y:
             return list(q)
-        
+
         not_visited_neighbours = []
         neighbours = get_cell_open_neighbours(maze, current[0], current[1])
 
@@ -404,7 +403,56 @@ def dfs_solver(win, maze, start_x, start_y, end_x, end_y):
             visited.add(new_item)
         else:
             q.pop()
+
+    return None
     
+def dfs_iterative_base_solver(win, maze, start_x, start_y, end_x, end_y, max_depth):
+
+    if max_depth < 1:
+        return None
+
+    q = deque()
+    current = (start_x, start_y)
+    q.append(current)
+    visited = set()
+    visited.add(current)
+
+    while q:
+        current = q[-1]
+        if current[0] == end_x and current[1] == end_y:
+            return list(q)
+
+        if len(q) == max_depth:
+            q.pop()
+            continue
+
+        not_visited_neighbours = []
+        neighbours = get_cell_open_neighbours(maze, current[0], current[1])
+
+        for neighbour in neighbours:
+            if (neighbour[0], neighbour[1]) not in visited:
+                not_visited_neighbours.append((neighbour[0], neighbour[1]))
+
+        if not_visited_neighbours:
+            new_item = random.choice(not_visited_neighbours)
+            q.append(new_item)
+            visited.add(new_item)
+        else:
+            q.pop()
+
+    return None
+
+def dfs_iterative_solver(win, maze, start_x, start_y, end_x, end_y):
+    max_length = 1
+    maze_shape = maze.shape
+    for item in maze_shape:
+        max_length *= (item + 1) // 2
+
+    for i in range(1, max_length + 1):
+        solution = dfs_iterative_base_solver(win, maze, start_x, start_y, end_x, end_y, i)
+        if solution is not None:
+            return solution
+
     return None
 
 maze = np.zeros(shape=(x_size*2-1, y_size*2-1)).astype(str)
@@ -431,17 +479,24 @@ start = time.time()
 print(astar_solver(win, maze, 1, 1, x_size, y_size))
 end = time.time()
 print("elapsed time: {} sec.".format(end - start))
+
 print("BFS solution:")
 start = time.time()
 print(bfs_solver(win, maze, 1, 1, x_size, y_size))
 end = time.time()
 print("elapsed time: {} sec.".format(end - start))
+
 print("DFS solution:")
 start = time.time()
 print(dfs_solver(win, maze, 1, 1, x_size, y_size))
 end = time.time()
 print("elapsed time: {} sec.".format(end - start))
 
+print("iterative DFS solution:")
+start = time.time()
+print(dfs_iterative_solver(win, maze, 1, 1, x_size, y_size))
+end = time.time()
+print("elapsed time: {} sec.".format(end - start))
 
 
 win.getMouse()
