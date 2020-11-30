@@ -11,7 +11,7 @@ y_size = int(input("Insert Y size: "))
 print("1. Recursive backtracker")
 print("2. Hunt and kill")
 print("3. Eller's algorithm")
-print("3. Hunt and kill (modified for work with steganography)")
+print("4. Hunt and kill (modified for work with steganography)")
 algorithm = int(input("Choose algorithm: "))
 STEP = 2
 CELL_SIZE = 40
@@ -717,6 +717,208 @@ def hunt_and_kill_steg(win, maze):
 
     set_cell(maze, end_x, end_y, 'E')
 
+def get_cell_neighbours_outside_set(cells, x, y, values_set):
+    neighbours = []
+    if x > 1:
+        if (x-1, y) not in values_set:
+            neighbours.append((x-1, y))
+    if x < x_size:
+        if (x+1, y) not in values_set:
+            neighbours.append((x+1, y))
+    if y > 1:
+        if (x, y-1) not in values_set:
+            neighbours.append((x, y-1))
+    if y < y_size:
+        if (x, y+1) not in values_set:
+            neighbours.append((x, y+1))
+    return neighbours
+
+def hunt_and_kill_steg_new(win, maze, message, seed):
+    # choose n start points
+    # order is important (set with seed)
+
+    # required for step 8
+    random.seed(seed)
+    embeddable_cells = []
+
+    redraw(win, maze, FRAME_RATE)
+    input()
+
+    # step 2
+    start_points = []
+    paths = []
+    start_points.append(random_start(maze, W=2))
+    start_points.append(random_start(maze, W=4))
+
+    end_x, end_y = random_start(maze, W=1)
+
+    for start_x, start_y in start_points:
+        paths.append(bfs_solver(win, maze, start_x, start_y, end_x, end_y))
+
+    redraw(win, maze, FRAME_RATE)
+    input()
+    # step 3
+    hunt_and_kill_fill(maze)
+    for path in paths:
+        prev_x, prev_y = None, None
+        for (x, y) in path:
+            if prev_x:
+                set_wall(maze, x, y, prev_x, prev_y, ' ')
+            set_cell(maze, x, y, 'I')
+            prev_x, prev_y = x, y
+
+    redraw(win, maze, FRAME_RATE)
+    input()
+    # step 4
+    embeddable_o_neighbours = set()
+    for path in paths:
+        for (curr_x, curr_y) in path:
+            if curr_x == 1 or curr_x == x_size or curr_y == 1 or curr_y == y_size:
+                continue
+            neighbours = get_cell_neighbours(maze, curr_x, curr_y, 'O')
+            if len(neighbours) != 2:
+                continue
+            if ((neighbours[0][0],neighbours[0][1]) in embeddable_o_neighbours) \
+                or ((neighbours[1][0],neighbours[1][1]) in embeddable_o_neighbours):
+                continue
+            set_cell(maze, neighbours[0][0], neighbours[0][1], 'O0')
+            set_cell(maze, neighbours[1][0], neighbours[1][1], 'O1')
+            embeddable_cells.append((curr_x, curr_y))
+            embeddable_o_neighbours.add((neighbours[0][0],neighbours[0][1]))
+            embeddable_o_neighbours.add((neighbours[1][0],neighbours[1][1]))
+
+    redraw(win, maze, FRAME_RATE)
+    input()
+    # step 5
+    message_counter = 0
+    for embeddable_cell in embeddable_cells:
+        curr_x = embeddable_cell[0]
+        curr_y = embeddable_cell[1]
+        
+        neighbours_o0 = get_cell_neighbours(maze, curr_x, curr_y, 'O0')
+        neighbours_o1 = get_cell_neighbours(maze, curr_x, curr_y, 'O1')
+        neighbour_o0 = neighbours_o0[0]
+        neighbour_o1 = neighbours_o1[0]
+
+
+        if message_counter < len(message):
+            curr_bit = message[message_counter]
+            if curr_bit == '1':
+                set_cell(maze, neighbour_o0[0], neighbour_o0[1], 'D')
+                set_cell(maze, neighbour_o1[0], neighbour_o1[1], 'I')
+                set_wall(maze, curr_x, curr_y, neighbour_o1[0], neighbour_o1[1], ' ')
+            else:
+                set_cell(maze, neighbour_o1[0], neighbour_o1[1], 'D')
+                set_cell(maze, neighbour_o0[0], neighbour_o0[1], 'I')
+                set_wall(maze, curr_x, curr_y, neighbour_o0[0], neighbour_o0[1], ' ')
+            message_counter = message_counter + 1
+        else:
+            
+            set_wall(maze, curr_x, curr_y, neighbour_o0[0], neighbour_o0[1], ' ')
+            set_wall(maze, curr_x, curr_y, neighbour_o1[0], neighbour_o1[1], ' ')
+            set_cell(maze, neighbour_o0[0], neighbour_o0[1], 'I')
+            set_cell(maze, neighbour_o1[0], neighbour_o1[1], 'I')
+
+
+    redraw(win, maze, FRAME_RATE)
+    input()
+    # step 6
+    for (curr_x, curr_y) in itertools.product(range(1,x_size+1),range(1,y_size+1)):
+        if get_cell(maze, curr_x, curr_y) != 'I':
+            continue
+        neighbours = get_cell_neighbours(maze, curr_x, curr_y, 'O')
+        for neigh_x, neigh_y in neighbours:
+            set_cell(maze, neigh_x, neigh_y, 'F')
+
+
+    redraw(win, maze, FRAME_RATE)
+    input()
+    while True:
+        # step 7
+        hunt_and_kill_mod(win, maze, reuse=True)
+
+        # step 8
+        d_exist = False
+        for (curr_x, curr_y) in itertools.product(range(1, x_size + 1), range(1, y_size + 1)):
+
+            if get_cell(maze, curr_x, curr_y) != 'D':
+                continue
+
+            neighbours = get_cell_neighbours(maze, curr_x, curr_y, 'I')
+
+            unemb_i_exist = False
+            for x, y in neighbours:
+                if (x, y) in embeddable_cells:
+                    continue
+                unemb_i_exist = True
+                found_x, found_y = curr_x, curr_y
+                unemb_x, unemb_y = x, y
+                break
+
+            if not unemb_i_exist:
+                continue
+            d_exist = True
+            break
+
+
+
+        if d_exist:
+            set_wall(maze, found_x, found_y, unemb_x, unemb_y, ' ')
+            set_cell(maze, found_x, found_y, 'I')
+            neighbours = get_cell_neighbours(maze, found_x, found_y, 'O')
+            for x, y in neighbours:
+                set_cell(maze, x, y, 'F')
+        else:
+            break
+
+
+
+    # end (step 9)
+    start_iter = 0
+    for start_x, start_y in start_points:
+        set_cell(maze, start_x, start_y, 'S' + str(start_iter))
+        start_iter = start_iter + 1
+
+    set_cell(maze, end_x, end_y, 'E')
+
+def decode(maze, seed):
+    random.seed(seed)
+    answer = ""
+
+    start_points = []
+    paths = []
+    path_cells = set()
+    start_points.append(random_start(maze, W=2))
+    start_points.append(random_start(maze, W=4))
+
+    end_x, end_y = random_start(maze, W=1)
+
+    for start_x, start_y in start_points:
+        path = bfs_solver(win, maze, start_x, start_y, end_x, end_y)
+        paths.append(path)
+        path_cells.update(path)
+
+    embeddable_neighbours = set()
+    for path in paths:
+        for (curr_x, curr_y) in path:
+            if curr_x == 1 or curr_x == x_size or curr_y == 1 or curr_y == y_size:
+                continue
+            neighbours = get_cell_neighbours_outside_set(maze, curr_x, curr_y, path_cells)
+            if len(neighbours) != 2:
+                continue
+            if neighbours[0] in embeddable_neighbours \
+                or neighbours[1] in embeddable_neighbours:
+                continue
+            current = ""
+            if get_wall(maze, curr_x, curr_y, neighbours[0][0], neighbours[0][1]) == " ":
+                current += "0"
+            if get_wall(maze, curr_x, curr_y, neighbours[1][0], neighbours[1][1]) == " ":
+                current += "1"
+            if len(current) == 1:
+                answer += current
+            embeddable_neighbours.add(neighbours[0])
+            embeddable_neighbours.add(neighbours[1])
+    return answer
 
 # raw maze, filled with 0's
 maze = np.zeros(shape=(x_size*2-1, y_size*2-1)).astype(str)
@@ -743,7 +945,17 @@ elif algorithm == 4:
     #set_cell(maze, x_start, y_start, 'I')
     hunt_and_kill_mod(win, maze)
 
-    hunt_and_kill_steg(win, maze)
+    #hunt_and_kill_steg(win, maze)
+    message = '110101010101'
+    hunt_and_kill_steg_new(win, maze, message, 100500)
+    decoded_message = decode(maze, 100500)
+    print("The message " + decoded_message + " was decoded")
+    print("Is it equal to initial message " + str(message == decoded_message))
+    if message != decoded_message:
+        print("Is initial message starts with decoded message at least " + str(message.startswith(decoded_message)))
+        if message.startswith(decoded_message):
+            print("Probably the embeddable capasity of given maze is to small for the message")
+    print("\n\n")
 
 redraw(win, maze, FRAME_RATE)
 
