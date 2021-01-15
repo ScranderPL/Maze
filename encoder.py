@@ -69,6 +69,10 @@ def encode(maze_graphics, maze, message, seed):
             embeddable_o_neighbours.add((neighbours[0][0],neighbours[0][1]))
             embeddable_o_neighbours.add((neighbours[1][0],neighbours[1][1]))
 
+    if len(embeddable_cells) < len(message):
+        print("The maze is to small to encode message", message)
+        print("If you need to encode whole message try again with bigger maze")
+
     maze_graphics.redraw(maze)
     input("Press enter to continue")
 
@@ -104,6 +108,9 @@ def encode(maze_graphics, maze, message, seed):
             maze.set_wall(curr_x, curr_y, neighbour_o1[0], neighbour_o1[1], ' ')
             maze.set_cell(neighbour_o0[0], neighbour_o0[1], 'I')
             maze.set_cell(neighbour_o1[0], neighbour_o1[1], 'I')
+
+    print("Message", message[:message_counter], "was encoded")
+
 
     maze_graphics.redraw(maze)
     input("Press enter to continue")
