@@ -4,7 +4,7 @@ import random
 
 
 CELL_SIZE = 40
-FRAME_RATE = 1
+FRAME_RATE = 2
 STEP = 2
 
 

@@ -180,3 +180,18 @@ def dfs_iterative_solver(maze_graphics, maze, start_x, start_y, end_x, end_y):
             return solution
 
     return None
+
+
+
+def general_solver(algorithm, maze_graphics, maze, start_x, start_y, end_x, end_y):
+
+    if algorithm == "A*":
+        return astar_solver(maze_graphics, maze, start_x, start_y, end_x, end_y)
+    elif algorithm == "bfs":
+        return bfs_solver(maze_graphics, maze, start_x, start_y, end_x, end_y)
+    elif algorithm == "dfs":
+        return dfs_solver(maze_graphics, maze, start_x, start_y, end_x, end_y)
+    elif algorithm == "dfs iterative":
+        return dfs_iterative_solver(maze_graphics, maze, start_x, start_y, end_x, end_y)
+
+    return None

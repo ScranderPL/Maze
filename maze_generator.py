@@ -36,7 +36,8 @@ def recursive_backtracker(maze_graphics, maze):
         # z listy, aż nie uda nam się pójść dalej
         if not neighbours:
             # Uwaga: To służy do wyświetlania, nie ma wpływu na działanie algorytmu
-            maze_graphics.redraw(maze)
+            if maze_graphics:
+                maze_graphics.redraw(maze)
 
             # Oznaczamy aktualną komórkę jako odwiedzoną i przetworzoną (nie znajduje się już na liście)
             maze.set_cell(current_cell[0], current_cell[1], 'V')
@@ -59,7 +60,8 @@ def recursive_backtracker(maze_graphics, maze):
         visited_stack.append(chosen_neighbour)
 
         # Uwaga: To służy do wyświetlania, nie ma wpływu na działanie algorytmu
-        maze_graphics.redraw(maze)
+        if maze_graphics:
+            maze_graphics.redraw(maze)
 
         # Początkowo labirynt ma wszystkie ściany wypełnione, wraz z kolejnym krokami algorytmu kolejne ściany są
         # usuwane. W tym momencie następuje usunięcie ściany między aktualną komórką, a jej wybranym wcześniej sąsiadem
@@ -155,7 +157,6 @@ def hunt_and_kill_mod(maze_graphics, maze, reuse = False):
         curr_y = random.randint(1, maze.y_size)
 
     while True:
-        #maze_graphics.redraw(maze)
         maze.set_cell(curr_x, curr_y, 'I')
         neighbours = maze.get_cell_neighbours(curr_x, curr_y, 'O')
 
@@ -203,7 +204,8 @@ def eller(maze_graphics, maze):
     for y in range(1, maze.y_size+1):
 
         # Uwaga: To służy do wyświetlania, nie ma wpływu na działanie algorytmu
-        maze_graphics.redraw(maze)
+        if maze_graphics:
+            maze_graphics.redraw(maze)
 
         # W tej pętli łączymy losowo zbiory znajdujące się w danym wierszu, robimy to poprzez usuwanie ścian między
         # między wylosowanymi komórkami, które są w różnych zbiorach (Ilustracja 3.)
