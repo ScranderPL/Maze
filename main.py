@@ -40,11 +40,11 @@ elif algorithm == 4:
 
     decoded_message = decoder.decode(maze_graphics, maze_object, seed)
 
-    print("The message " + decoded_message + " was decoded")
-    print("Is it equal to initial message " + str(message == decoded_message))
+    print("The message", decoded_message, "was decoded")
+    print("Is it equal to initial message:", message == decoded_message)
 
     if message != decoded_message:
-        print("Is initial message starts with decoded message at least " + str(message.startswith(decoded_message)))
+        print("Is initial message starts with decoded message at least:", message.startswith(decoded_message))
 
         if message.startswith(decoded_message):
             print("Probably the embeddable capasity of given maze is to small for the message")
