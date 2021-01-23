@@ -102,6 +102,33 @@ class Maze:
         return neighbours
 
 
+    def get_cell_not_processed_neighbours(self, x, y):
+
+        neighbours = []
+
+        if x > 1:
+            neighbour = self.get_cell(x-1, y)
+            if neighbour == ' ':
+                neighbours.append([x-1, y])
+
+        if x < self.x_size:
+            neighbour = self.get_cell(x+1, y)
+            if neighbour == ' ':
+                neighbours.append([x+1, y])
+
+        if y > 1:
+            neighbour = self.get_cell(x, y-1)
+            if neighbour == ' ':
+                neighbours.append([x, y-1])
+
+        if y < self.y_size:
+            neighbour = self.get_cell(x, y+1)
+            if neighbour == ' ':
+                neighbours.append([x, y+1])
+
+        return neighbours
+
+
     def get_cell_open_neighbours(self, x, y):
 
         neighbours = []
@@ -123,6 +150,12 @@ class Maze:
                 neighbours.append([x, y+1])
 
         return neighbours
+
+
+    def set_cells_values(self, cells_list, value):
+
+        for item in cells_list:
+            self.set_cell(item[0], item[1], value)
 
 
     def set_cell(self, x, y, value):

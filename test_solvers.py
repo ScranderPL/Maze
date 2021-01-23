@@ -39,7 +39,7 @@ def test_solvs(n, number_of_runs, seed = 1):
 
     for i in range(number_of_runs):
         maze_object = maze.Maze(n, n)
-        maze_generator.hunt_and_kill(None, maze_object)
+        maze_generator.hunt_and_kill_optimized(None, maze_object)
 
         for item in available_algorithms:
             start = time.time()
@@ -60,7 +60,7 @@ def test_solvs(n, number_of_runs, seed = 1):
 
     for i in range(number_of_runs):
         maze_object = maze.Maze(n, n)
-        maze_generator.eller(None, maze_object)
+        maze_generator.eller_optimized(None, maze_object)
 
         for item in available_algorithms:
             start = time.time()

@@ -1,4 +1,5 @@
 import random
+from dsu import DSU
 
 
 def recursive_backtracker(maze_graphics, maze):
@@ -107,6 +108,37 @@ def hunt_and_kill(maze_graphics, maze):
 
         maze.set_wall(curr_cell[0], curr_cell[1], next_cell[0], next_cell[1], ' ')
         curr_cell = next_cell
+
+
+
+def hunt_and_kill_optimized(maze_graphics, maze):
+
+
+    curr_x = random.randint(1, maze.x_size)
+    curr_y = random.randint(1, maze.y_size)
+    curr_cell = [curr_x, curr_y]
+    maze.set_cell(curr_x, curr_y, 'I')
+    neighbours = maze.get_cell_not_processed_neighbours(curr_x, curr_y)
+
+    maze.set_cells_values(neighbours, 'F')
+    f_cells = [[neighbour, curr_cell] for neighbour in neighbours]
+    f_cells_indices = set()
+    f_cells_indices.update(list(range(len(neighbours))))
+
+
+    while f_cells_indices:
+        f_cells_pointer = random.choice(tuple(f_cells_indices))
+        f_cells_indices.remove(f_cells_pointer)
+        maze.set_wall(f_cells[f_cells_pointer][0][0], f_cells[f_cells_pointer][0][1], f_cells[f_cells_pointer][1][0], f_cells[f_cells_pointer][1][1], ' ')
+        curr_x = f_cells[f_cells_pointer][0][0]
+        curr_y = f_cells[f_cells_pointer][0][1]
+        curr_cell = [curr_x, curr_y]
+        maze.set_cell(curr_x, curr_y, 'I')
+        neighbours = maze.get_cell_not_processed_neighbours(curr_x, curr_y)
+        maze.set_cells_values(neighbours, 'F')
+        f_cells_pointer += 1
+        f_cells_indices.update(list(range(len(f_cells), len(f_cells) + len(neighbours))))
+        f_cells.extend([[neighbour, curr_cell] for neighbour in neighbours])
 
 
 
@@ -286,3 +318,78 @@ def eller(maze_graphics, maze):
                 sets[-1].add((x, y+1))
                 set_counter = set_counter + 1
                 maze.set_cell(x, y+1, set_counter)
+
+
+
+def eller_optimized(maze_graphics, maze):
+
+    dsu = DSU()
+    dsu.set_size(maze.x_size*maze.y_size)
+
+    #processing the rows except the last
+    for y in range(1, maze.y_size):
+
+
+        for x in range(1, maze.x_size):
+            #if random > 0.5 delete wall
+            if dsu.find(x-1 + (y-1)*maze.x_size) != dsu.find(x + (y-1)*maze.x_size) and random.random() > 0.5:
+                dsu.union(x-1 + (y-1)*maze.x_size, x + (y-1)*maze.x_size)
+                maze.set_wall(x, y, x+1, y, ' ')
+
+
+        classes = {}
+        classes_count = {}
+
+        for x in range(1, maze.x_size + 1):
+            current_class = dsu.find(x-1 + (y-1)*maze.x_size)
+            if current_class not in classes:
+                classes[current_class] = [x]
+                classes_count[current_class] = 0
+            else:
+                classes[current_class].append(x)
+            #maze.set_cell(x, y, current_class)
+
+        if maze_graphics:
+            input("press enter to continue")
+            maze_graphics.redraw(maze)
+
+        for x in range(1, maze.x_size + 1):
+            #if random > 0.5 delete wall
+            if random.random() > 0.5:
+                dsu.union(x-1 + (y-1)*maze.x_size, x-1 + y*maze.x_size)
+                maze.set_wall(x, y, x, y+1, ' ')
+                current_class = dsu.find(x-1 + (y-1)*maze.x_size)
+                classes_count[current_class] += 1
+
+        for key, val in classes_count.items():
+            if val == 0:
+                x = random.choice(classes[key])
+                dsu.union(x-1 + (y-1)*maze.x_size, x-1 + y*maze.x_size)
+                maze.set_wall(x, y, x, y+1, ' ')
+                current_class = maze.get_cell(x,y)
+
+        '''
+        for x in range(1, maze.x_size + 1):
+            current_class = dsu.find(x-1 + y*maze.x_size)
+            maze.set_cell(x, y + 1, current_class)
+        '''
+
+        if maze_graphics:
+            input("press enter to continue")
+            maze_graphics.redraw(maze)
+
+    #the last row processing
+    y = maze.y_size
+    for x in range(1, maze.x_size):
+        if dsu.find(x-1 + (y-1)*maze.x_size) != dsu.find(x + (y-1)*maze.x_size):
+            maze.set_wall(x, y, x+1, y, ' ')
+            dsu.union(x-1 + (y-1)*maze.x_size, x + (y-1)*maze.x_size)
+    '''
+    for x in range(1, maze.x_size + 1):
+        current_class = dsu.find(x-1 + (y-1)*maze.x_size)
+        maze.set_cell(x, y, current_class)
+    '''
+
+    if maze_graphics:
+        input("press enter to continue")
+        maze_graphics.redraw(maze)

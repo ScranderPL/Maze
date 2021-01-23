@@ -15,6 +15,8 @@ def test_gens(n, number_of_runs, seed = 1):
 
     for i in range(number_of_runs):
         maze_object = maze.Maze(n, n)
+        maze_object.clear()
+        maze_object.fill()
 
         start = time.time()
         maze_generator.recursive_backtracker(None, maze_object)
@@ -30,9 +32,11 @@ def test_gens(n, number_of_runs, seed = 1):
 
     for i in range(number_of_runs):
         maze_object = maze.Maze(n, n)
+        maze_object.clear()
+        maze_object.fill()
 
         start = time.time()
-        maze_generator.hunt_and_kill(None, maze_object)
+        maze_generator.hunt_and_kill_optimized(None, maze_object)
         end = time.time()
 
         hunt_and_kill_time += (end - start) / number_of_runs
@@ -45,9 +49,11 @@ def test_gens(n, number_of_runs, seed = 1):
 
     for i in range(number_of_runs):
         maze_object = maze.Maze(n, n)
+        maze_object.clear()
+        maze_object.fill()
 
         start = time.time()
-        maze_generator.eller(None, maze_object)
+        maze_generator.eller_optimized(None, maze_object)
         end = time.time()
 
         eller_time += (end - start) / number_of_runs
